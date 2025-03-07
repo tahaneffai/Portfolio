@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import * as AOS from 'aos';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { trigger, transition, style, animate, query, group } from '@angular/animations';
+import { filter } from 'rxjs/operators';
 
 const routeTransitionAnimations = trigger('routeAnimations', [
   transition('* => *', [
@@ -92,11 +93,26 @@ const routeTransitionAnimations = trigger('routeAnimations', [
 export class AppComponent implements OnInit {
   title = 'MyPortfolio';
 
+  constructor(private router: Router) {
+    // Subscribe to router events
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      // Refresh AOS after navigation
+      setTimeout(() => {
+        AOS.refresh();
+      }, 100);
+    });
+  }
+
   ngOnInit() {
     AOS.init({
-      duration: 1000,
-      once: true,
-      mirror: false
+      duration: 800,
+      once: false,
+      mirror: true,
+      offset: 50,
+      easing: 'ease-out',
+      startEvent: 'DOMContentLoaded'
     });
   }
 

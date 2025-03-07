@@ -13,11 +13,23 @@ import { CommonModule } from '@angular/common';
         <div class="header-line"></div>
       </div>
       
+      <!-- Service Category Filter -->
+      <div class="service-filter" data-aos="fade-up">
+        <button 
+          *ngFor="let category of serviceCategories" 
+          (click)="filterByCategory(category.id)"
+          [class.active]="currentCategory === category.id"
+          class="filter-btn">
+          <i class="fas" [ngClass]="category.icon"></i>
+          {{ category.name }}
+        </button>
+      </div>
+      
       <div class="projects-container">
         <!-- Navigation Dots -->
         <div class="project-nav-dots">
           <button 
-            *ngFor="let dot of [0, 1, 2]; let i = index" 
+            *ngFor="let project of filteredProjects; let i = index" 
             [class.active]="currentProject === i"
             (click)="navigateToProject(i)"
             class="nav-dot"
@@ -36,95 +48,44 @@ import { CommonModule } from '@angular/common';
         <button 
           class="nav-arrow next" 
           (click)="nextProject()"
-          [class.disabled]="currentProject === 2"
+          [class.disabled]="currentProject === filteredProjects.length - 1"
           aria-label="Next project">
           <i class="fas fa-chevron-right"></i>
         </button>
 
         <div class="projects-wrapper" [style.transform]="'translateY(' + (-currentProject * 100) + 'vh)'">
-          <!-- Optical Center Project -->
-          <article class="project-card" [class.active]="currentProject === 0">
+          <!-- Project Cards -->
+          <article 
+            *ngFor="let project of filteredProjects; let i = index" 
+            class="project-card" 
+            [class.active]="currentProject === i">
             <div class="project-content">
               <div class="project-image">
-                <img src="assets/icons/optical-center.jpg" alt="Optical Center Management System" />
-                <div class="project-overlay">
-                  <div class="tech-stack">
-                    <span>Java</span>
-                    <span>JavaFX</span>
-                    <span>MySQL</span>
-                    <span>Scene Builder</span>
+                <div class="image-container">
+                  <img [src]="project.imageUrl" [alt]="project.title" />
+                  <div class="project-overlay">
+                    <div class="tech-stack">
+                      <span *ngFor="let tech of project.technologies">{{ tech }}</span>
+                    </div>
+                    <a [href]="project.demoUrl" class="play-button" aria-label="Watch demo video">
+                      <i class="fas fa-play"></i>
+                    </a>
                   </div>
                 </div>
               </div>
               <div class="content-wrapper">
-                <h3>Optical Center Management System</h3>
-                <p>A comprehensive desktop application for managing optical centers. Features include client management, invoice generation, inventory tracking for glasses and lenses, order processing, and detailed reporting.</p>
+                <div class="category-badge" [ngClass]="project.category">
+                  <i class="fas" [ngClass]="getCategoryIcon(project.category)"></i>
+                  {{ getCategoryName(project.category) }}
+                </div>
+                <h3>{{ project.title }}</h3>
+                <p>{{ project.description }}</p>
                 <div class="project-links">
-                  <a href="#" target="_blank" class="live-link">
-                    <i class="fas fa-desktop"></i> Demo Video
+                  <a [href]="project.demoUrl" target="_blank" class="live-link">
+                    <i [class]="project.demoIcon"></i> {{ project.demoText }}
                     <span class="btn-glow"></span>
                   </a>
-                  <a href="#" target="_blank" class="github-link">
-                    <i class="fab fa-github"></i> GitHub
-                    <span class="btn-glow"></span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- Task Management Project -->
-          <article class="project-card" [class.active]="currentProject === 1">
-            <div class="project-content">
-              <div class="project-image">
-                <img src="assets/project2.jpg" alt="Task Management App" />
-                <div class="project-overlay">
-                  <div class="tech-stack">
-                    <span>Angular</span>
-                    <span>Firebase</span>
-                    <span>TypeScript</span>
-                  </div>
-                </div>
-              </div>
-              <div class="content-wrapper">
-                <h3>Task Management App</h3>
-                <p>A collaborative task management application with real-time updates and team features.</p>
-                <div class="project-links">
-                  <a href="#" target="_blank" class="live-link">
-                    <i class="fas fa-external-link-alt"></i> Live Demo
-                    <span class="btn-glow"></span>
-                  </a>
-                  <a href="#" target="_blank" class="github-link">
-                    <i class="fab fa-github"></i> GitHub
-                    <span class="btn-glow"></span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- AI Chat Project -->
-          <article class="project-card" [class.active]="currentProject === 2">
-            <div class="project-content">
-              <div class="project-image">
-                <img src="assets/project3.jpg" alt="AI Chat Application" />
-                <div class="project-overlay">
-                  <div class="tech-stack">
-                    <span>Vue.js</span>
-                    <span>Python</span>
-                    <span>OpenAI</span>
-                  </div>
-                </div>
-              </div>
-              <div class="content-wrapper">
-                <h3>AI Chat Application</h3>
-                <p>An intelligent chatbot application powered by AI, featuring natural language processing.</p>
-                <div class="project-links">
-                  <a href="#" target="_blank" class="live-link">
-                    <i class="fas fa-external-link-alt"></i> Live Demo
-                    <span class="btn-glow"></span>
-                  </a>
-                  <a href="#" target="_blank" class="github-link">
+                  <a [href]="project.githubUrl" target="_blank" class="github-link">
                     <i class="fab fa-github"></i> GitHub
                     <span class="btn-glow"></span>
                   </a>
@@ -147,7 +108,7 @@ import { CommonModule } from '@angular/common';
 
     .section-header {
       text-align: center;
-      margin-bottom: 5rem;
+      margin-bottom: 3rem;
       position: relative;
     }
 
@@ -198,6 +159,75 @@ import { CommonModule } from '@angular/common';
       right: -10px;
     }
 
+    /* Service Filter Styles */
+    .service-filter {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.8rem 1.5rem;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.1);
+      color: #4b5563;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2);
+    }
+
+    .filter-btn i {
+      font-size: 1rem;
+    }
+
+    /* Category Badge */
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      gap: 0.4rem;
+    }
+
+    .category-badge.development {
+      background: rgba(79, 70, 229, 0.1);
+      color: #4f46e5;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+
+    .category-badge.design {
+      background: rgba(236, 72, 153, 0.1);
+      color: #ec4899;
+      border: 1px solid rgba(236, 72, 153, 0.2);
+    }
+
+    .category-badge.marketing {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
     .projects-container {
       position: relative;
       height: 100vh;
@@ -234,12 +264,20 @@ import { CommonModule } from '@angular/common';
 
     .project-image {
       position: relative;
-      height: 400px;
+      width: 100%;
+      padding-bottom: 66.67%; /* 3:2 Aspect ratio */
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 20px 40px rgba(30, 58, 138, 0.2);
-      transform-style: preserve-3d;
-      perspective: 1000px;
+    }
+
+    .image-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
 
     .project-image img {
@@ -255,10 +293,12 @@ import { CommonModule } from '@angular/common';
       background: linear-gradient(to bottom, rgba(30, 58, 138, 0.9), rgba(59, 130, 246, 0.9));
       opacity: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       transform: translateZ(-100px);
+      gap: 1.5rem;
     }
 
     .project-card:hover .project-overlay {
@@ -267,23 +307,23 @@ import { CommonModule } from '@angular/common';
     }
 
     .project-card:hover .project-image img {
-      transform: scale(1.1) translateZ(50px);
+      transform: scale(1.05);
     }
 
     .tech-stack {
       display: flex;
-      gap: 1rem;
+      gap: 0.7rem;
       flex-wrap: wrap;
       justify-content: center;
-      padding: 1rem;
+      padding: 0 1.5rem;
     }
 
     .tech-stack span {
       background: rgba(255, 255, 255, 0.95);
       color: #1e3a8a;
-      padding: 0.6rem 1.2rem;
+      padding: 0.5rem 1rem;
       border-radius: 30px;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       font-weight: 500;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
@@ -292,6 +332,26 @@ import { CommonModule } from '@angular/common';
     .tech-stack span:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .play-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .play-button:hover {
+      background: rgba(255, 255, 255, 0.9);
+      color: #3b82f6;
+      transform: scale(1.1);
     }
 
     .content-wrapper {
@@ -376,27 +436,6 @@ import { CommonModule } from '@angular/common';
       50% {
         transform: scale(1.5);
         opacity: 0;
-      }
-    }
-
-    @media (max-width: 1024px) {
-      .project-content {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-
-      .project-image {
-        height: 300px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .project-card {
-        padding: 1rem;
-      }
-
-      .project-image {
-        height: 250px;
       }
     }
 
@@ -499,7 +538,27 @@ import { CommonModule } from '@angular/common';
       opacity: 1;
     }
 
+    @media (max-width: 1024px) {
+      .project-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .project-image {
+        padding-bottom: 56.25%; /* 16:9 Aspect ratio for smaller screens */
+      }
+    }
+
     @media (max-width: 768px) {
+      .service-filter {
+        gap: 0.6rem;
+      }
+      
+      .filter-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+      }
+      
       .project-nav-dots {
         right: 1rem;
       }
@@ -517,13 +576,115 @@ import { CommonModule } from '@angular/common';
       .nav-arrow.next {
         right: 1rem;
       }
+      
+      .category-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+      }
     }
   `]
 })
 export class ProjectsComponent implements OnInit {
   currentProject = 0;
+  currentCategory = 'all';
+  
+  // Define service categories
+  serviceCategories = [
+    { id: 'all', name: 'All Projects', icon: 'fa-th-large' },
+    { id: 'development', name: 'Development', icon: 'fa-code' },
+    { id: 'design', name: 'Design', icon: 'fa-palette' },
+    { id: 'marketing', name: 'Marketing', icon: 'fa-bullhorn' }
+  ];
+  
+  // Project data with categories
+  projects = [
+    {
+      title: 'Optical Center Management System',
+      description: 'A comprehensive desktop application for managing optical centers. Features include client management, invoice generation, inventory tracking for glasses and lenses, order processing, and detailed reporting.',
+      imageUrl: 'assets/icons/optical-center.jpg',
+      technologies: ['Electron', 'React', 'Redux', 'Node.js', 'SQLite'],
+      category: 'development',
+      demoUrl: '#',
+      demoText: 'Demo Video',
+      demoIcon: 'fas fa-desktop',
+      githubUrl: '#'
+    },
+    {
+      title: 'Task Management App',
+      description: 'A collaborative task management application with real-time updates and team features. Users can manage projects, assign tasks, track progress, and communicate with team members efficiently.',
+      imageUrl: 'assets/project2.jpg',
+      technologies: ['Angular', 'Firebase', 'RxJS', 'TypeScript', 'SCSS'],
+      category: 'development',
+      demoUrl: '#',
+      demoText: 'Live Demo',
+      demoIcon: 'fas fa-external-link-alt',
+      githubUrl: '#'
+    },
+    {
+      title: 'AI Chat Application',
+      description: 'An intelligent chatbot application powered by AI, featuring natural language processing. The app can understand user intent, provide contextual responses, and learn from interactions over time.',
+      imageUrl: 'assets/project3.jpg',
+      technologies: ['React', 'Node.js', 'Express', 'OpenAI API', 'MongoDB'],
+      category: 'development',
+      demoUrl: '#',
+      demoText: 'Live Demo',
+      demoIcon: 'fas fa-external-link-alt',
+      githubUrl: '#'
+    },
+    {
+      title: 'Corporate Brand Identity',
+      description: 'A complete brand identity design for a tech startup, including logo design, color palette, typography, business cards, and brand guidelines document.',
+      imageUrl: 'assets/design-project1.jpg',
+      technologies: ['Illustrator', 'Photoshop', 'InDesign', 'After Effects'],
+      category: 'design',
+      demoUrl: '#',
+      demoText: 'View Case Study',
+      demoIcon: 'fas fa-image',
+      githubUrl: '#'
+    },
+    {
+      title: 'E-commerce UX/UI Design',
+      description: 'User experience and interface design for a fashion e-commerce platform. The project included user research, wireframing, prototyping, and high-fidelity UI design.',
+      imageUrl: 'assets/design-project2.jpg',
+      technologies: ['Figma', 'Adobe XD', 'Sketch', 'Principle'],
+      category: 'design',
+      demoUrl: '#',
+      demoText: 'Interactive Prototype',
+      demoIcon: 'fas fa-desktop',
+      githubUrl: '#'
+    },
+    {
+      title: 'Social Media Campaign',
+      description: 'Strategic social media campaign for a product launch, including content creation, audience targeting, and performance analysis across multiple platforms.',
+      imageUrl: 'assets/marketing-project1.jpg',
+      technologies: ['Facebook Ads', 'Instagram', 'Google Analytics', 'Content Strategy'],
+      category: 'marketing',
+      demoUrl: '#',
+      demoText: 'View Results',
+      demoIcon: 'fas fa-chart-line',
+      githubUrl: '#'
+    },
+    {
+      title: 'SEO Optimization Project',
+      description: 'Complete SEO overhaul for an e-commerce website resulting in 150% increase in organic traffic and improved search engine rankings for key product terms.',
+      imageUrl: 'assets/marketing-project2.jpg',
+      technologies: ['Keyword Research', 'On-page SEO', 'Technical SEO', 'Link Building'],
+      category: 'marketing',
+      demoUrl: '#',
+      demoText: 'Case Study',
+      demoIcon: 'fas fa-file-alt',
+      githubUrl: '#'
+    }
+  ];
+  
+  // Filtered projects based on current category - start with all projects
+  filteredProjects: any[] = [];
 
   ngOnInit() {
+    // Initialize with all projects
+    this.filteredProjects = [...this.projects];
+    this.currentCategory = 'all';
+    
     // AOS is already initialized in AppComponent
   }
 
@@ -541,6 +702,19 @@ export class ProjectsComponent implements OnInit {
     }
   }
 
+  filterByCategory(category: string) {
+    this.currentCategory = category;
+    
+    if (category === 'all') {
+      this.filteredProjects = [...this.projects];
+    } else {
+      this.filteredProjects = this.projects.filter(project => project.category === category);
+    }
+    
+    // Reset to first project in filtered list
+    this.currentProject = 0;
+  }
+
   navigateToProject(index: number) {
     this.currentProject = index;
   }
@@ -552,8 +726,18 @@ export class ProjectsComponent implements OnInit {
   }
 
   nextProject() {
-    if (this.currentProject < 2) {
+    if (this.currentProject < this.filteredProjects.length - 1) {
       this.navigateToProject(this.currentProject + 1);
     }
+  }
+  
+  getCategoryName(categoryId: string): string {
+    const category = this.serviceCategories.find(cat => cat.id === categoryId);
+    return category ? category.name : 'Other';
+  }
+  
+  getCategoryIcon(categoryId: string): string {
+    const category = this.serviceCategories.find(cat => cat.id === categoryId);
+    return category ? category.icon : 'fa-folder';
   }
 }

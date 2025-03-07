@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import emailjs from 'emailjs-com';
 
 @Component({
   selector: 'app-contact',
@@ -29,7 +30,7 @@ import { CommonModule } from '@angular/common';
                 <span class="icon">📧</span>
               </div>
               <h3>Email</h3>
-              <p>tahaneffai12&#64;example.com</p>
+              <p>tahaneffai12&#64;gmail.com</p>
             </div>
 
             <div class="info-item">
@@ -93,15 +94,37 @@ import { CommonModule } from '@angular/common';
               </div>
             </div>
 
-            <button type="submit" [disabled]="!contactForm.valid" class="submit-button">
-              <span class="button-content">
+            <button type="submit" [disabled]="!contactForm.valid || isSubmitting" class="submit-button">
+              <span class="button-content" *ngIf="!isSubmitting">
                 Send Message
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
               </span>
+              <span class="button-content" *ngIf="isSubmitting">
+                <span class="spinner"></span>
+                Sending...
+              </span>
             </button>
+            
+            <!-- Success/Error Messages -->
+            <div class="form-message success" *ngIf="formStatus === 'success'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>Your message has been sent successfully!</span>
+            </div>
+            
+            <div class="form-message error" *ngIf="formStatus === 'error'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Oops! Something went wrong. Please try again later.</span>
+            </div>
           </form>
         </div>
       </div>
@@ -320,6 +343,56 @@ import { CommonModule } from '@angular/common';
       }
     }
 
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s ease-in-out infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Form status messages */
+    .form-message {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .form-message.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .form-message.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @keyframes bounce {
       0%, 100% {
         transform: translateY(0);
@@ -353,13 +426,20 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   contactForm: FormGroup;
   isFocused = {
     name: false,
     email: false,
     message: false
   };
+  isSubmitting = false;
+  formStatus: 'idle' | 'success' | 'error' = 'idle';
+
+  // EmailJS configuration
+  private emailjsServiceId = 'service_30vllw4'; // Replace with your EmailJS service ID
+  private emailjsTemplateId = 'template_zk1ndcf'; // Replace with your EmailJS template ID
+  private emailjsUserId = 'gWm28yvsFBVTU38nc'; // Replace with your EmailJS user ID
 
   constructor(private fb: FormBuilder) {
     this.contactForm = this.fb.group({
@@ -367,6 +447,11 @@ export class ContactComponent {
       email: ['', [Validators.required, Validators.email]],
       message: ['', Validators.required]
     });
+  }
+
+  ngOnInit(): void {
+    // Initialize EmailJS with your user ID
+    emailjs.init(this.emailjsUserId);
   }
 
   onFocus(field: string) {
@@ -378,9 +463,42 @@ export class ContactComponent {
   }
 
   onSubmit() {
-    if (this.contactForm.valid) {
-      console.log(this.contactForm.value);
-      // Here you would typically send the form data to your backend
+    if (this.contactForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true;
+      this.formStatus = 'idle';
+      
+      const templateParams = {
+        from_name: this.contactForm.value.name,
+        from_email: this.contactForm.value.email,
+        message: this.contactForm.value.message
+      };
+
+      emailjs.send(
+        this.emailjsServiceId,
+        this.emailjsTemplateId,
+        templateParams
+      )
+      .then((response) => {
+        console.log('SUCCESS!', response.status, response.text);
+        this.formStatus = 'success';
+        this.contactForm.reset();
+        this.isSubmitting = false;
+        
+        // Reset form status after 5 seconds
+        setTimeout(() => {
+          this.formStatus = 'idle';
+        }, 5000);
+      })
+      .catch((err) => {
+        console.log('FAILED...', err);
+        this.formStatus = 'error';
+        this.isSubmitting = false;
+        
+        // Reset form status after 5 seconds
+        setTimeout(() => {
+          this.formStatus = 'idle';
+        }, 5000);
+      });
     }
   }
 } 

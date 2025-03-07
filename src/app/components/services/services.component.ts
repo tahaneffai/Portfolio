@@ -1,5 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import * as AOS from 'aos';
+
+interface Service {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: string;
+}
 
 @Component({
   selector: 'app-services',
@@ -8,86 +17,48 @@ import { CommonModule } from '@angular/common';
   template: `
     <section class="services-section">
       <div class="container">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-down">
           <h2>My Services</h2>
-          <p class="subtitle">Professional solutions I offer</p>
+          <p class="subtitle">Professional solutions tailored to your needs</p>
+        </div>
+        
+        <div class="filter-container" data-aos="fade-up">
+          <button 
+            [class.active]="activeFilter === 'all'" 
+            (click)="filterServices('all')">
+            All
+          </button>
+          <button 
+            [class.active]="activeFilter === 'development'" 
+            (click)="filterServices('development')">
+            Development
+          </button>
+          <button 
+            [class.active]="activeFilter === 'design'" 
+            (click)="filterServices('design')">
+            Design
+          </button>
+          <button 
+            [class.active]="activeFilter === 'marketing'" 
+            (click)="filterServices('marketing')">
+            Marketing
+          </button>
         </div>
         
         <div class="services-grid">
-          <!-- Full-Stack Development -->
-          <div class="service-card" data-aos="zoom-in" data-aos-delay="100">
+          <div 
+            class="service-card" 
+            *ngFor="let service of filteredServices" 
+            data-aos="fade-up"
+            [attr.data-category]="service.category">
             <div class="card-content">
               <div class="icon-container">
-                <span class="icon">💻</span>
+                <span class="icon">{{ service.icon }}</span>
                 <div class="glow"></div>
               </div>
-              <h3>Full-Stack Development</h3>
-              <p>Building complete web & mobile solutions, from frontend to backend.</p>
-              <div class="tech-stack">
-                <span>Angular</span>
-                <span>React</span>
-                <span>Node.js</span>
-                <span>MongoDB</span>
-              </div>
+              <h3>{{ service.title }}</h3>
+              <p>{{ service.description }}</p>
             </div>
-            <div class="card-bg"></div>
-          </div>
-
-          <!-- Desktop Applications -->
-          <div class="service-card" data-aos="zoom-in" data-aos-delay="200">
-            <div class="card-content">
-              <div class="icon-container">
-                <span class="icon">🖥️</span>
-                <div class="glow"></div>
-              </div>
-              <h3>Desktop Applications</h3>
-              <p>Developing efficient and user-friendly desktop software.</p>
-              <div class="tech-stack">
-                <span>Electron</span>
-                <span>Python</span>
-                <span>Java</span>
-                <span>C++</span>
-              </div>
-            </div>
-            <div class="card-bg"></div>
-          </div>
-
-          <!-- UI/UX & Graphic Design -->
-          <div class="service-card" data-aos="zoom-in" data-aos-delay="300">
-            <div class="card-content">
-              <div class="icon-container">
-                <span class="icon">🎨</span>
-                <div class="glow"></div>
-              </div>
-              <h3>UI/UX & Graphic Design</h3>
-              <p>Creating sleek designs, flyers, and business cards.</p>
-              <div class="tech-stack">
-                <span>Figma</span>
-                <span>Adobe XD</span>
-                <span>Photoshop</span>
-                <span>Illustrator</span>
-              </div>
-            </div>
-            <div class="card-bg"></div>
-          </div>
-
-          <!-- Digital Marketing & Ads -->
-          <div class="service-card" data-aos="zoom-in" data-aos-delay="400">
-            <div class="card-content">
-              <div class="icon-container">
-                <span class="icon">📢</span>
-                <div class="glow"></div>
-              </div>
-              <h3>Digital Marketing & Ads</h3>
-              <p>Managing social media, branding, and ad campaigns.</p>
-              <div class="tech-stack">
-                <span>Social Media</span>
-                <span>SEO</span>
-                <span>Analytics</span>
-                <span>Branding</span>
-              </div>
-            </div>
-            <div class="card-bg"></div>
           </div>
         </div>
       </div>
@@ -98,6 +69,7 @@ import { CommonModule } from '@angular/common';
       min-height: 100vh;
       padding: 6rem 0;
       background-color: var(--color-background);
+      color: var(--color-text);
     }
 
     .container {
@@ -108,16 +80,16 @@ import { CommonModule } from '@angular/common';
 
     .section-header {
       text-align: center;
-      margin-bottom: 4rem;
+      margin-bottom: 3rem;
 
       h2 {
         font-size: 2.5rem;
         margin-bottom: 1rem;
-        color: var(--color-text);
         background: linear-gradient(to right, #3b82f6, #1e3a8a);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
+        font-weight: 700;
       }
 
       .subtitle {
@@ -127,116 +99,98 @@ import { CommonModule } from '@angular/common';
       }
     }
 
+    .filter-container {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+
+      button {
+        padding: 0.6rem 1.2rem;
+        background: rgba(20, 24, 50, 0.5);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 30px;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+
+        &:hover, &.active {
+          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+      }
+    }
+
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 2rem;
       margin: 0 auto;
-      max-width: 1200px;
     }
 
     .service-card {
       position: relative;
-      padding: 2.5rem;
       background: rgba(20, 24, 50, 0.5);
       border-radius: 20px;
       border: 1px solid rgba(59, 130, 246, 0.1);
-      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
       overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
       height: 100%;
-      display: flex;
-      flex-direction: column;
 
       &:hover {
-        transform: translateY(-10px);
+        transform: translateY(-8px);
         border-color: var(--color-primary);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 
         .icon-container {
           transform: scale(1.1);
-          .icon {
-            animation: bounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-          }
-          .glow {
-            opacity: 1;
-            transform: scale(1.4);
-          }
-        }
-
-        .card-bg {
-          opacity: 1;
-          transform: scale(1.1);
-        }
-
-        .tech-stack span {
-          transform: translateY(-2px);
-          background: var(--color-primary);
-          color: white;
+          box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
         }
       }
     }
 
     .card-content {
-      position: relative;
-      z-index: 1;
-      flex: 1;
+      padding: 2rem;
       display: flex;
       flex-direction: column;
-    }
-
-    .card-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
       height: 100%;
-      background: radial-gradient(
-        circle at top right,
-        rgba(59, 130, 246, 0.1),
-        transparent 70%
-      );
-      opacity: 0;
-      transition: all 0.4s ease;
     }
 
     .icon-container {
-      position: relative;
       width: 60px;
       height: 60px;
       margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s ease;
       background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
       border-radius: 15px;
+      transition: all 0.3s ease;
+      position: relative;
 
       .icon {
-        font-size: 2rem;
-        position: relative;
-        z-index: 1;
+        font-size: 1.8rem;
       }
 
       .glow {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 80px;
-        height: 80px;
-        background: radial-gradient(
-          circle,
-          rgba(59, 130, 246, 0.3),
-          transparent 70%
-        );
-        opacity: 0;
-        transition: all 0.3s ease;
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        background: rgba(59, 130, 246, 0.5);
+        filter: blur(15px);
+        opacity: 0.6;
+        z-index: -1;
       }
     }
 
     h3 {
       color: var(--color-primary);
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       margin-bottom: 1rem;
       font-weight: 600;
     }
@@ -244,46 +198,115 @@ import { CommonModule } from '@angular/common';
     p {
       color: var(--color-text-secondary);
       line-height: 1.6;
-      margin-bottom: 1.5rem;
-      font-size: 1rem;
-      flex: 1;
-    }
-
-    .tech-stack {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-top: auto;
-
-      span {
-        padding: 0.4rem 1rem;
-        background: rgba(59, 130, 246, 0.1);
-        border-radius: 20px;
-        font-size: 0.9rem;
-        color: var(--color-primary);
-        transition: all 0.3s ease;
-      }
-    }
-
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-6px);
-      }
+      font-size: 0.95rem;
+      flex-grow: 1;
     }
 
     @media (max-width: 768px) {
       .services-grid {
-        grid-template-columns: 1fr;
-        padding: 0 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
       }
 
-      .service-card {
-        padding: 2rem;
+      .filter-container {
+        gap: 0.5rem;
+        
+        button {
+          padding: 0.5rem 1rem;
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .services-grid {
+        grid-template-columns: 1fr;
       }
     }
   `]
 })
-export class ServicesComponent {} 
+export class ServicesComponent implements OnInit {
+  services: Service[] = [
+    {
+      id: 'web',
+      title: 'Website Development',
+      description: 'Responsive, SEO-friendly websites built with modern frameworks and best practices for optimal performance.',
+      icon: '💻',
+      category: 'development'
+    },
+    {
+      id: 'desktop',
+      title: 'Desktop Application Development',
+      description: 'Efficient and robust desktop applications tailored to meet specific business needs and workflows.',
+      icon: '🖥️',
+      category: 'development'
+    },
+    {
+      id: 'mobile',
+      title: 'Mobile Application Development',
+      description: 'Intuitive, high-performance mobile apps for both iOS and Android platforms with seamless user experiences.',
+      icon: '📱',
+      category: 'development'
+    },
+    {
+      id: 'design',
+      title: 'Design Services',
+      description: 'Comprehensive UI/UX, graphic design, and branding solutions that elevate your digital presence.',
+      icon: '🎨',
+      category: 'design'
+    },
+    {
+      id: 'flyers',
+      title: 'Flyers',
+      description: 'Eye-catching and impactful marketing flyers designed to grab attention and convey your message effectively.',
+      icon: '📄',
+      category: 'design'
+    },
+    {
+      id: 'business-cards',
+      title: 'Business Cards',
+      description: 'Professional and creative business card designs that make a lasting impression on potential clients.',
+      icon: '🪪',
+      category: 'design'
+    },
+    {
+      id: 'social-media',
+      title: 'Social Media Management',
+      description: 'Strategic management and growth of your online presence across various social media platforms.',
+      icon: '📱',
+      category: 'marketing'
+    },
+    {
+      id: 'digital-ads',
+      title: 'Digital Ads',
+      description: 'Targeted ad campaigns designed for maximum reach, engagement, and conversion across digital platforms.',
+      icon: '📢',
+      category: 'marketing'
+    }
+  ];
+
+  filteredServices: Service[] = [];
+  activeFilter: string = 'all';
+
+  ngOnInit() {
+    // Initialize filtered services with all services
+    this.filteredServices = [...this.services];
+    
+    // Make sure the activeFilter is set to 'all' initially
+    this.activeFilter = 'all';
+    
+    // AOS is already initialized in AppComponent
+  }
+
+  filterServices(category: string) {
+    this.activeFilter = category;
+    
+    if (category === 'all') {
+      this.filteredServices = [...this.services];
+    } else {
+      this.filteredServices = this.services.filter(service => 
+        service.category === category
+      );
+    }
+  }
+} 
