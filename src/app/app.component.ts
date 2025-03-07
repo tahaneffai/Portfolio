@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import * as AOS from 'aos';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { trigger, transition, style, animate, query, group } from '@angular/animations';
 import { filter } from 'rxjs/operators';
+import { initAOS, refreshAOS } from './utils/aos-wrapper';
 
 const routeTransitionAnimations = trigger('routeAnimations', [
   transition('* => *', [
@@ -100,20 +100,13 @@ export class AppComponent implements OnInit {
     ).subscribe(() => {
       // Refresh AOS after navigation
       setTimeout(() => {
-        AOS.refresh();
+        refreshAOS();
       }, 100);
     });
   }
 
   ngOnInit() {
-    AOS.init({
-      duration: 800,
-      once: false,
-      mirror: true,
-      offset: 50,
-      easing: 'ease-out',
-      startEvent: 'DOMContentLoaded'
-    });
+    initAOS();
   }
 
   prepareRoute(outlet: RouterOutlet) {
