@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -358,6 +358,11 @@ import { RouterModule } from '@angular/router';
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   particles: Array<{style: any}> = [];
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit() {
     // Create particles
@@ -380,6 +385,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   handleCvHover(event: MouseEvent) {
+    if (!this.isBrowser) return;
+    
     const target = event.currentTarget as HTMLElement;
     const icon = target.querySelector('.download-icon') as HTMLElement;
     
@@ -389,6 +396,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   handleCvLeave(event: MouseEvent) {
+    if (!this.isBrowser) return;
+    
     const target = event.currentTarget as HTMLElement;
     const icon = target.querySelector('.download-icon') as HTMLElement;
     

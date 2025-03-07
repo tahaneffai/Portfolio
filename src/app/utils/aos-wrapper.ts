@@ -1,16 +1,21 @@
+import { isPlatformBrowser } from '@angular/common';
 import * as AOS from 'aos';
 
 export function initAOS() {
-  AOS.init({
-    duration: 800,
-    once: false,
-    mirror: true,
-    offset: 50,
-    easing: 'ease-out',
-    startEvent: 'DOMContentLoaded'
-  });
+  if (typeof window !== 'undefined') {
+    AOS.init({
+      duration: 800,
+      once: false,
+      mirror: true,
+      offset: 50,
+      easing: 'ease-out',
+      startEvent: 'DOMContentLoaded'
+    });
+  }
 }
 
 export function refreshAOS() {
-  AOS.refresh();
+  if (typeof window !== 'undefined') {
+    AOS.refresh();
+  }
 } 

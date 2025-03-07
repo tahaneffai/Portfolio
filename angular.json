@@ -43,10 +43,9 @@
               "./node_modules/aos/dist/aos.js"
             ],
             "server": "src/main.server.ts",
-            "prerender": true,
-            "ssr": {
-              "entry": "src/server.ts"
-            },
+            "prerender": false,
+            "ssr": false,
+            "allowedCommonJsDependencies": ["aos"],
             "budgets": [
               {
                 "type": "initial",

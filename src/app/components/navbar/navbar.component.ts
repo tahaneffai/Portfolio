@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -220,23 +220,32 @@ import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 export class NavbarComponent {
   isScrolled = false;
   isMenuOpen = false;
+  isBrowser: boolean;
 
-  constructor() {
-    window.addEventListener('scroll', () => {
-      this.isScrolled = window.scrollY > 20;
-    });
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
+    if (this.isBrowser) {
+      window.addEventListener('scroll', () => {
+        this.isScrolled = window.scrollY > 20;
+      });
+    }
   }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
-    document.body.style.overflow = this.isMenuOpen ? 'hidden' : '';
+    if (this.isBrowser) {
+      document.body.style.overflow = this.isMenuOpen ? 'hidden' : '';
+    }
   }
 
   handleHover(event: MouseEvent) {
+    if (!this.isBrowser || window.innerWidth <= 768) return;
+    
     const target = event.target as HTMLElement;
     const hoverIndicator = target.parentElement?.querySelector('.hover-indicator') as HTMLElement;
     
-    if (hoverIndicator && window.innerWidth > 768) {
+    if (hoverIndicator) {
       const rect = target.getBoundingClientRect();
       hoverIndicator.style.width = `${rect.width}px`;
       hoverIndicator.style.left = `${rect.left - target.parentElement!.getBoundingClientRect().left}px`;

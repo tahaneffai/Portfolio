@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { trigger, transition, style, animate, query, group } from '@angular/animations';
 import { filter } from 'rxjs/operators';
@@ -92,21 +92,31 @@ const routeTransitionAnimations = trigger('routeAnimations', [
 })
 export class AppComponent implements OnInit {
   title = 'MyPortfolio';
+  isBrowser: boolean;
 
-  constructor(private router: Router) {
-    // Subscribe to router events
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      // Refresh AOS after navigation
-      setTimeout(() => {
-        refreshAOS();
-      }, 100);
-    });
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
+    if (this.isBrowser) {
+      // Subscribe to router events
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe(() => {
+        // Refresh AOS after navigation
+        setTimeout(() => {
+          refreshAOS();
+        }, 100);
+      });
+    }
   }
 
   ngOnInit() {
-    initAOS();
+    if (this.isBrowser) {
+      initAOS();
+    }
   }
 
   prepareRoute(outlet: RouterOutlet) {
