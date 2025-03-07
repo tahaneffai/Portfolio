@@ -2,7 +2,5 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "buildCommand": "npm run build",
-  "ignoreCommand": "echo 'Ignoring build errors'",
-  "installCommand": "npm install"
+  "buildCommand": "npm run build"
 } 

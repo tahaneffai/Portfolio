@@ -4,10 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "bash vercel-build.sh",
+    "build": "ng build --configuration production --aot",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:MyPortfolio": "node dist/my-portfolio/server/server.mjs"
+    "serve:ssr:MyPortfolio": "node dist/my-portfolio/server/server.mjs",
+    "postinstall": "chmod +x vercel-build.sh"
   },
   "private": true,
   "dependencies": {
